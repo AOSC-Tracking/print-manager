@@ -13,11 +13,12 @@
 #include <KCupsPrinter.h>
 #include <KCupsRequest.h>
 
+#include <KWindowSystem>
+#include <KX11Extras>
 #include <QDBusConnection>
 #include <QDialog>
 #include <QPointer>
 #include <QTimer>
-#include <QWindow>
 
 ConfigurePrinterInterface::ConfigurePrinterInterface(QObject *parent)
     : QObject(parent)
@@ -91,7 +92,11 @@ void ConfigurePrinterInterface::ConfigurePrinter(const QString &destName)
 
     // Check if it's not reserved
     if (m_uis.value(destName)) {
-        m_uis.value(destName)->windowHandle()->requestActivate();
+        if (KWindowSystem::isPlatformX11()) {
+            KX11Extras::forceActiveWindow(m_uis.value(destName)->winId());
+        } else {
+            m_uis.value(destName)->windowHandle()->requestActivate();
+        }
     }
 }
 
